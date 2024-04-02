@@ -89,7 +89,7 @@ final class AMQPCreateInfo extends CreateInfo
             'redial_timeout' => $this->redialTimeout,
         ]);
 
-        if (!empty($this->consumerId)) {
+        if ($this->consumerId !== null && $this->consumerId !== '') {
             $result['consumer_id'] = $this->consumerId;
         }
 
