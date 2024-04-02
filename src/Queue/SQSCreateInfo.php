@@ -85,7 +85,7 @@ final class SQSCreateInfo extends CreateInfo
         if ($this->tags !== []) {
             $result['tags'] = $this->tags;
         }
-        if (!empty($this->messageGroupId)) {
+        if ($this->messageGroupId !== null && $this->messageGroupId !== '') {
             $result['message_group_id'] = $this->messageGroupId;
         }
 
