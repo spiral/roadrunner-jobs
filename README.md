@@ -137,7 +137,7 @@ while ($task = $consumer->waitTask()) {
     try {
         $name = $task->getName(); // "ping"
         $queue = $task->getQueue(); // "local"
-        $driver = $queue->getDriver(); // "memory"
+        $driver = $task->getDriver(); // "memory"
         $payload = $task->getPayload(); // {"site": "https://example.com"}
     
         // Process task
