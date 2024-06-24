@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Spiral\RoadRunner\Jobs\Tests\Unit\Task;
 
 use Generator;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Spiral\RoadRunner\Jobs\Queue\Driver;
@@ -37,8 +38,6 @@ final class ReceivedTaskTest extends TestCase
             $this->worker, $id, $driver, $pipeline, $name, $queue, $payload, $headers
         );
     }
-
-
 
     public function testGetsQueue(): void
     {
@@ -81,6 +80,30 @@ final class ReceivedTaskTest extends TestCase
         $this->assertFalse($task->isFails());
     }
 
+    public function testAck(): void
+    {
+        $task = $this->createTask();
+
+        $this->assertFalse($task->isCompleted());
+        $this->assertFalse($task->isFails());
+        $this->assertFalse($task->isSuccessful());
+
+        $this->worker->expects($this->once())
+            ->method('respond')
+            ->with(
+                $this->callback(function (Payload $payload) {
+                    $this->assertEquals('{"type":2,"data":[]}', $payload->body);
+
+                    return true;
+                }),
+            );
+
+        $task->ack();
+
+        $this->assertTrue($task->isCompleted());
+        $this->assertTrue($task->isSuccessful());
+        $this->assertFalse($task->isFails());
+    }
 
     public static function provideFailData(): Generator
     {
@@ -90,9 +113,97 @@ final class ReceivedTaskTest extends TestCase
         yield 'headers' => ['Some error message', false, null, ['foo' => 'bar']];
     }
 
-    /**
-     * @dataProvider provideFailData
-     */
+    #[DataProvider('provideFailData')]
+    public function testNack(string $error, bool $redelivery, int|null $delay): void
+    {
+        $task = $this->createTask();
+
+        if ($delay !== null) {
+            $task = $task->withDelay($delay);
+        }
+
+        $this->assertFalse($task->isCompleted());
+        $this->assertFalse($task->isFails());
+        $this->assertFalse($task->isSuccessful());
+
+        $this->worker->expects($this->once())
+            ->method('respond')
+            ->with(
+                $this->callback(function (Payload $payload) use ($delay, $redelivery, $error) {
+                    $result = [
+                        'type' => Type::NACK,
+                        'data' => [
+                            'message' => $error,
+                            'redelivery' => $redelivery,
+                            'delay_seconds' => (int) $delay,
+                        ],
+                    ];
+
+                    $this->assertEquals(
+                        \json_encode($result),
+                        $payload->body,
+                    );
+
+                    return true;
+                }),
+            );
+
+        $task->nack(message: $error, redelivery: $redelivery);
+
+        $this->assertTrue($task->isFails());
+        $this->assertFalse($task->isSuccessful());
+        $this->assertTrue($task->isCompleted());
+    }
+
+
+    #[DataProvider('provideFailData')]
+    public function testRequeue(string $error, bool $requeue, int|null $delay, array $headers): void
+    {
+        $task = $this->createTask();
+
+        if ($delay !== null) {
+            $task = $task->withDelay($delay);
+        }
+
+        foreach ($headers as $key => $value) {
+            $task = $task->withHeader($key, $value);
+            $headers[$key] = [$value];
+        }
+
+        $this->assertFalse($task->isCompleted());
+        $this->assertFalse($task->isFails());
+        $this->assertFalse($task->isSuccessful());
+
+        $this->worker->expects($this->once())
+            ->method('respond')
+            ->with(
+                $this->callback(function (Payload $payload) use ($delay, $error, $headers) {
+                    $result = [
+                        'type' => Type::REQUEUE,
+                        'data' => [
+                            'message' => $error,
+                            'delay_seconds' => (int) $delay,
+                        ],
+                    ];
+
+                    if (!empty($headers)) {
+                        $result['data']['headers'] = $headers;
+                    }
+
+                    $this->assertEquals(\json_encode($result), $payload->body,);
+
+                    return true;
+                }),
+            );
+
+        $task->requeue(message: $error);
+
+        $this->assertTrue($task->isFails());
+        $this->assertFalse($task->isSuccessful());
+        $this->assertTrue($task->isCompleted());
+    }
+
+    #[DataProvider('provideFailData')]
     public function testFail($error, bool $requeue, int|null $delay, array $headers): void
     {
         $task = $this->createTask();

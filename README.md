@@ -93,7 +93,34 @@ var_dump($task->getId() . ' has been queued');
 
 ### Consumer
 
-The following code will allow you to read and process the task from the RoadRunner server.
+The Consumer processes tasks from RoadRunner server and responds based on the processing outcome:
+
+- `ack` - is used for positive acknowledgements.
+- `nack` - is used for negative acknowledgements.
+- `requeue` - is used for requeuing the task.
+
+The behavior of the `nack` method depends on its implementation by the queue driver. It can accept an additional
+parameter **redelivery**; if it is passed and set to **true**, the task will be requeued. However, not all drivers 
+support this functionality. If the redelivery parameter is not passed, set to **false**, or the queue driver's
+implementation does not support it, the task will not be requeued.
+
+```php
+$task->nack(message: $reason, redelivery: true);
+```
+
+The `requeue` method is implemented by RoadRunner and does not depend on the queue driver. It allows you to resend
+the task to **the end of the queue** and add additional headers to the task.
+
+```php
+$task->withHeader('attempts', (string) ($attempts + 1))->requeue($exception);
+```
+
+The `nack` and `requeue` methods have the ability to specify a **delay** for requeuing the task. To do this, call 
+the `withDelay` method and pass the desired value before invoking the `nack` or `requeue` methods.
+
+```php
+$task->withDelay(10)->requeue($exception);
+```
 
 ```php
 <?php
@@ -115,9 +142,9 @@ while ($task = $consumer->waitTask()) {
     
         // Process task
 
-        $task->complete();
+        $task->ack();
     } catch (\Throwable $e) {
-        $task->fail($e, requeue: true);
+        $task->requeue($e);
     }
 }
 ```

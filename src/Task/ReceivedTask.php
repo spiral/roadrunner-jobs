@@ -62,11 +62,17 @@ class ReceivedTask extends QueuedTask implements ReceivedTaskInterface
         return $this->queue;
     }
 
+    /**
+     * @deprecated Since v4.5.0, use {@see ack()} instead.
+     */
     public function complete(): void
     {
         $this->respond(Type::SUCCESS);
     }
 
+    /**
+     * @deprecated Since v4.5.0, use {@see nack()} or {@see requeue()} instead.
+     */
     public function fail(string|\Stringable|\Throwable $error, bool $requeue = false): void
     {
         $data = [
@@ -82,6 +88,34 @@ class ReceivedTask extends QueuedTask implements ReceivedTaskInterface
         $this->respond(Type::ERROR, $data);
     }
 
+    public function ack(): void
+    {
+        $this->respond(Type::ACK);
+    }
+
+    public function nack(string|\Stringable|\Throwable $message, bool $redelivery = false): void
+    {
+        $this->respond(Type::NACK, [
+            'message' => (string) $message,
+            'redelivery' => $redelivery,
+            'delay_seconds' => $this->delay,
+        ]);
+    }
+
+    public function requeue(string|\Stringable|\Throwable $message): void
+    {
+        $data = [
+            'message' => (string) $message,
+            'delay_seconds' => $this->delay,
+        ];
+
+        if (!empty($this->headers)) {
+            $data['headers'] = $this->headers;
+        }
+
+        $this->respond(Type::REQUEUE, $data);
+    }
+
     public function isCompleted(): bool
     {
         return $this->completed !== null;
@@ -89,12 +123,14 @@ class ReceivedTask extends QueuedTask implements ReceivedTaskInterface
 
     public function isSuccessful(): bool
     {
-        return $this->completed === Type::SUCCESS;
+        return $this->completed === Type::SUCCESS || $this->completed === Type::ACK;
     }
 
     public function isFails(): bool
     {
-        return $this->completed === Type::ERROR;
+        return $this->completed === Type::ERROR ||
+            $this->completed === Type::NACK ||
+            $this->completed === Type::REQUEUE;
     }
 
     /**
