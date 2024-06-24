@@ -22,7 +22,7 @@ enum ExchangeType: string
      * routing by comparing the routing key. But, in this case, the key is set
      * using a template, like "user.*.messages".
      */
-    case Topics = 'topics';
+    case Topics = 'topic';
 
     /**
      * Routes tasks to related queues based on a comparison of the (key, value)
