@@ -93,6 +93,9 @@ class ReceivedTask extends QueuedTask implements ReceivedTaskInterface
         $this->respond(Type::ACK);
     }
 
+    /**
+     * The behavior of this method depends on its implementation by the queue driver.
+     */
     public function nack(string|\Stringable|\Throwable $message, bool $redelivery = false): void
     {
         $this->respond(Type::NACK, [
