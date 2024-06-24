@@ -9,6 +9,9 @@ use Spiral\RoadRunner\Jobs\Queue\Driver;
 
 /**
  * @psalm-suppress MissingImmutableAnnotation The implementation of this task is mutable.
+ * @method void ack()
+ * @method void nack(string|\Stringable|\Throwable $message, bool $redelivery = false)
+ * @method void requeue(string|\Stringable|\Throwable $message)
  */
 interface ReceivedTaskInterface extends
     QueuedTaskInterface,
@@ -19,6 +22,7 @@ interface ReceivedTaskInterface extends
      * Marks the current task as completed.
      *
      * @throws JobsException
+     * @deprecated Since v4.5.0, use {@see ack()} instead.
      */
     public function complete(): void;
 
@@ -26,6 +30,7 @@ interface ReceivedTaskInterface extends
      * Marks the current task as failed.
      *
      * @throws JobsException
+     * @deprecated Since v4.5.0, use {@see nack()} or {@see requeue()} instead.
      */
     public function fail(string|\Stringable|\Throwable $error, bool $requeue = false): void;
 
