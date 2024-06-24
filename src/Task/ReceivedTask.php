@@ -67,6 +67,7 @@ class ReceivedTask extends QueuedTask implements ReceivedTaskInterface
      */
     public function complete(): void
     {
+        /** @psalm-suppress DeprecatedConstant */
         $this->respond(Type::SUCCESS);
     }
 
@@ -85,6 +86,7 @@ class ReceivedTask extends QueuedTask implements ReceivedTaskInterface
             $data['headers'] = $this->headers;
         }
 
+        /** @psalm-suppress DeprecatedConstant */
         $this->respond(Type::ERROR, $data);
     }
 
@@ -126,11 +128,13 @@ class ReceivedTask extends QueuedTask implements ReceivedTaskInterface
 
     public function isSuccessful(): bool
     {
+        /** @psalm-suppress DeprecatedConstant */
         return $this->completed === Type::SUCCESS || $this->completed === Type::ACK;
     }
 
     public function isFails(): bool
     {
+        /** @psalm-suppress DeprecatedConstant */
         return $this->completed === Type::ERROR ||
             $this->completed === Type::NACK ||
             $this->completed === Type::REQUEUE;
