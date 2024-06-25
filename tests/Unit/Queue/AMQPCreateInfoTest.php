@@ -133,4 +133,11 @@ final class AMQPCreateInfoTest extends TestCase
 
         $this->assertEquals($expectedArray, $amqpCreateInfo->toArray());
     }
+
+    public function testToArrayWithEmptyQueueHeaders(): void
+    {
+        $amqpCreateInfo = new AMQPCreateInfo(name: 'foo');
+
+        $this->assertArrayNotHasKey('queue_headers', $amqpCreateInfo->toArray());
+    }
 }

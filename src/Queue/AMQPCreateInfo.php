@@ -84,13 +84,16 @@ final class AMQPCreateInfo extends CreateInfo
             'requeue_on_fail' => $this->requeueOnFail,
             'durable' => $this->durable,
             'consume_all' => $this->consumeAll,
-            'queue_headers' => $this->queueHeaders,
             'delete_queue_on_stop' => $this->deleteQueueOnStop,
             'redial_timeout' => $this->redialTimeout,
         ]);
 
         if ($this->consumerId !== null && $this->consumerId !== '') {
             $result['consumer_id'] = $this->consumerId;
+        }
+
+        if ($this->queueHeaders !== []) {
+            $result['queue_headers'] = $this->queueHeaders;
         }
 
         return $result;
