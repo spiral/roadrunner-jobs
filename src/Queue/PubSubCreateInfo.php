@@ -34,7 +34,7 @@ final class PubSubCreateInfo extends CreateInfo
             'topic' => $this->topic,
         ]);
 
-        if (!empty($this->deadLetterTopic)) {
+        if ($this->deadLetterTopic !== null && $this->deadLetterTopic !== '') {
             $result['dead_letter_topic'] = $this->deadLetterTopic;
             $result['max_delivery_attempts'] = $this->maxDeliveryAttempts;
         }
