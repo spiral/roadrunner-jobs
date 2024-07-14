@@ -40,6 +40,8 @@ enum Driver: string
      */
     case NSQ = 'nsq';
 
+    case PubSub = 'google_pub_sub';
+
     /**
      * @internal Used when the driver is not specified.
      */
