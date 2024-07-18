@@ -25,6 +25,13 @@ final class PubSubCreateInfo extends CreateInfo
         public readonly int $maxDeliveryAttempts = self::MAX_DELIVERY_ATTEMPTS_DEFAULT_VALUE,
     ) {
         parent::__construct(Driver::PubSub, $name, $priority);
+
+        \assert($this->projectId !== '', 'Precondition [projectId !== ""] failed');
+        \assert($this->topic !== '', 'Precondition [topic !== ""] failed');
+        \assert($this->maxDeliveryAttempts >= 5, 'Precondition [maxDeliveryAttempts >= 5] failed');
+        if ($this->deadLetterTopic !== null) {
+            \assert($this->deadLetterTopic !== '', 'Precondition [deadLetterTopic !== ""] failed');
+        }
     }
 
     public function toArray(): array
