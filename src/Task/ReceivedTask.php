@@ -102,7 +102,7 @@ class ReceivedTask extends QueuedTask implements ReceivedTaskInterface
     {
         $this->respond(Type::NACK, [
             'message' => (string) $message,
-            'redelivery' => $redelivery,
+            'requeue' => $redelivery,
             'delay_seconds' => $this->delay,
         ]);
     }
