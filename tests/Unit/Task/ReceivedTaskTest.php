@@ -134,7 +134,7 @@ final class ReceivedTaskTest extends TestCase
                         'type' => Type::NACK,
                         'data' => [
                             'message' => $error,
-                            'redelivery' => $redelivery,
+                            'requeue' => $redelivery,
                             'delay_seconds' => (int) $delay,
                         ],
                     ];
