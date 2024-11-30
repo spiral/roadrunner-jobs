@@ -46,7 +46,7 @@ interface QueueInterface
     public function create(
         string $name,
         string|\Stringable $payload,
-        OptionsInterface $options = null,
+        ?OptionsInterface $options = null,
     ): PreparedTaskInterface;
 
     /**

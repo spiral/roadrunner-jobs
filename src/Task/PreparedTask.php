@@ -25,7 +25,7 @@ final class PreparedTask extends Task implements PreparedTaskInterface, OptionsA
     public function __construct(
         string $name,
         string|\Stringable $payload,
-        OptionsInterface $options = null,
+        ?OptionsInterface $options = null,
         array $headers = [],
     ) {
         $this->options = $options ?? new Options();
